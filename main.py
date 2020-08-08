@@ -16,13 +16,48 @@ background = pygame.image.load("background.jpg")
 mixer.music.load("Action_Hero.mp3")
 mixer.music.play(-1)
 
+## Defining fonts
+    # Score
+score_value = 0
+font = pygame.font.Font("freesansbold.ttf", 24)
+
+textX = 10
+textY = 10
+
+    # Game over text
+over_font = pygame.font.Font("freesansbold.ttf", 64)
+    # Top font
+top_font = pygame.font.Font("freesansbold.ttf", 20)
+
+# Gadhulacha Paani Mode
+def gadhulacha_mode():
+    mixer.music.load("kallulache_pani.mp3")
+    mixer.music.play(-1)
+    gadhulacha_text("Gadhulacha Paani!")
+    pygame.display.update()
+
+# Shantabai Mode
+def shantabai_mode():
+    mixer.music.load("shantabai.mp3")
+    mixer.music.play(-1)
+    shantabai_text("Shantabai!")
+    pygame.display.update()
+
+# Default mode
+def default_mode():
+    mixer.music.load("Action_Hero.mp3")
+    mixer.music.play(-1)
+    default_mode_text("Normal Mode")
+    pygame.display.update()
+
+
 # Title and icon
 pygame.display.set_caption("Meme Invaders")
 icon = pygame.image.load("logo.png")
 pygame.display.set_icon((icon))
 
 # Player
-playerImg = pygame.image.load("ship.png")
+playerImg = pygame.image.load("penguin.png")
 playerX = 370
 playerY = 480
 playerXchange = 0
@@ -36,7 +71,8 @@ enemyYchange = []
 num_of_enemies = 6
 
 for i in range(num_of_enemies):
-    enemyImg.append(pygame.image.load("enemy.png"))
+    enemy = "vadapav.png" 
+    enemyImg.append(pygame.image.load(enemy))
     enemyX.append(random.randint(0, 736))
     enemyY.append(random.randint(50, 150))
     enemyXchange.append(4)
@@ -45,24 +81,13 @@ for i in range(num_of_enemies):
 # Bullet
 # Ready- You can't see the bullet on the screen
 # Fire- The bullet is currently moving
-bulletImg = pygame.image.load("bullet.png")
+bulletImg = pygame.image.load("snake.png")
 bulletX = 0
 bulletY = 480
 bulletXchange = 0
 bulletYchange = 10
 bulletState = "ready"
 
-# Score
-score_value = 0
-font = pygame.font.Font("freesansbold.ttf", 24)
-
-textX = 10
-textY = 10
-
-# Game over text
-over_font = pygame.font.Font("freesansbold.ttf", 64)
-# Top font
-top_font = pygame.font.Font("freesansbold.ttf", 20)
 
 def show_score(x, y):
     score = font.render("Score : " + str(score_value), True, (0, 255, 0))
@@ -72,8 +97,20 @@ def game_over_text():
     over_text = over_font.render("GAME OVER", True, (0, 255, 0))
     screen.blit(over_text, (200, 250))
 
-def top_text():
-    top_text = top_font.render("Don't let the vadapavs destroy your ship!", True, (0, 255, 0))
+def gadhulacha_text(textentry):
+    over_text = over_font.render(textentry, True, (150, 255, 100))
+    screen.blit(over_text, (100, 250))
+
+def shantabai_text(textentry):
+    over_text = over_font.render(textentry, True, (150, 255, 100))
+    screen.blit(over_text, (230, 250))
+
+def default_mode_text(textentry):
+    over_text = over_font.render(textentry, True, (150, 255, 100))
+    screen.blit(over_text, (190, 250))
+
+def top_text(textentry):
+    top_text = top_font.render(textentry, True, (0, 255, 0))
     screen.blit(top_text, (220, 10))
 
 def player(x, y):
@@ -96,7 +133,6 @@ def isCollision(enemyX, enemyY, bulletX, bulletY):
         return True
     else:
         return False
-
 
 # Game Loop
 running = True
@@ -124,6 +160,13 @@ while running:
                 # Get the current x co-ordinate of the spaceship
                 bulletX = playerX
                 fireBullet(bulletX, bulletY)
+        if event.key == pygame.K_F1:
+            gadhulacha_mode()
+        if event.key == pygame.K_F2:
+            shantabai_mode()
+        if event.key == pygame.K_F12:
+            default_mode()
+
 
     if event.type == pygame.KEYUP:
         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -178,5 +221,5 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
-    top_text()
+    top_text("Don't let the vadapavs destroy your ship!")
     pygame.display.update()
