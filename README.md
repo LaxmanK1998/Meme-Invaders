@@ -18,9 +18,18 @@ key invokes these game modes. Currently, the game modes only change the soundtra
 # List of Controls
 
 Left and right arrow keys - move the spaceship
+
+
 Spacebar - shoot
+
 F1 - Gadhulacha Paani Mode
+
+
 F2 - Shantabai Mode
+
+
 F12 - Switch back to default mode
+
+
 
 Created on 20th July 2020
