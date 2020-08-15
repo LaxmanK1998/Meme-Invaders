@@ -13,21 +13,28 @@ screen = pygame.display.set_mode((800, 600))
 background = pygame.image.load("background.jpg")
 
 # Background sound
-mixer.music.load("Action_Hero.mp3")
+mixer.music.load("openingTheme.mp3")
 mixer.music.play(-1)
 
 ## Defining fonts
-    # Score
+# Score
 score_value = 0
 font = pygame.font.Font("freesansbold.ttf", 24)
 
 textX = 10
 textY = 10
 
-    # Game over text
+# Game over text
 over_font = pygame.font.Font("freesansbold.ttf", 64)
-    # Top font
+# Top font
 top_font = pygame.font.Font("freesansbold.ttf", 20)
+
+# Default mode
+def default_mode():
+    mixer.music.load("openingTheme.mp3")
+    mixer.music.play(-1)
+    default_mode_text("Normal Mode")
+    pygame.display.update()
 
 # Gadhulacha Paani Mode
 def gadhulacha_mode():
@@ -50,13 +57,6 @@ def shiti_mode():
     shiti_text("Shiti vajali!")
     pygame.display.update()
 
-# Default mode
-def default_mode():
-    mixer.music.load("Action_Hero.mp3")
-    mixer.music.play(-1)
-    default_mode_text("Normal Mode")
-    pygame.display.update()
-
 
 # Title and icon
 pygame.display.set_caption("Meme Invaders")
@@ -64,7 +64,7 @@ icon = pygame.image.load("logo.png")
 pygame.display.set_icon((icon))
 
 # Player
-playerImg = pygame.image.load("penguin.png")
+playerImg = pygame.image.load("ship.png")
 playerX = 370
 playerY = 480
 playerXchange = 0
@@ -88,7 +88,7 @@ for i in range(num_of_enemies):
 # Bullet
 # Ready- You can't see the bullet on the screen
 # Fire- The bullet is currently moving
-bulletImg = pygame.image.load("snake.png")
+bulletImg = pygame.image.load("bullet.png")
 bulletX = 0
 bulletY = 480
 bulletXchange = 0
@@ -172,12 +172,21 @@ while running:
                 bulletX = playerX
                 fireBullet(bulletX, bulletY)
         if event.key == pygame.K_F1:
+            background = pygame.image.load("gadhulacha_bg.png")
+            playerImg = pygame.image.load("penguin.png")
+            bulletImg = pygame.image.load("snake.png")
             gadhulacha_mode()
+
         if event.key == pygame.K_F2:
             shantabai_mode()
+
         if event.key == pygame.K_F3:
             shiti_mode()
+
         if event.key == pygame.K_F12:
+            background = pygame.image.load("background.jpg")
+            playerImg = pygame.image.load("ship.png")
+            bulletImg = pygame.image.load("bullet.png")
             default_mode()
 
 

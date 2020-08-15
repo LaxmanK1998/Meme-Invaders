@@ -12,7 +12,7 @@ Or you can check out Attreya's video on Freecodecamp showing how to make the com
 Your objective is to shoot the vadapavs with your bullets
 
 # Game modes
-Currently there are two game modes. Gadhulacha Paani mode and Shantabai mode. Pressing a particular
+Currently there are three game modes, Gadhulacha Paani mode, Shiti Vajali mode and Shantabai mode. Pressing a particular
 key invokes these game modes. Currently, the game modes only change the soundtracks but more functionality will be added in the future
 
 # List of Controls
@@ -28,7 +28,10 @@ F1 - Gadhulacha Paani Mode
 F2 - Shantabai Mode
 
 
-F12 - Switch back to default mode
+F3 - Shiti Vajali Mode
+
+
+F12 - Switch back to default Mode
 
 
 
