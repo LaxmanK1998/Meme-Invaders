@@ -43,6 +43,13 @@ def shantabai_mode():
     shantabai_text("Shantabai!")
     pygame.display.update()
 
+# Shiti vajali gadi sutali Mode
+def shiti_mode():
+    mixer.music.load("shiti.mp3")
+    mixer.music.play(-1)
+    shiti_text("Shiti vajali!")
+    pygame.display.update()
+
 # Default mode
 def default_mode():
     mixer.music.load("Action_Hero.mp3")
@@ -68,7 +75,7 @@ enemyX = []
 enemyY = []
 enemyXchange = []
 enemyYchange = []
-num_of_enemies = 6
+num_of_enemies = 7
 
 for i in range(num_of_enemies):
     enemy = "vadapav.png" 
@@ -105,13 +112,17 @@ def shantabai_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (230, 250))
 
+def shiti_text(textentry):
+    over_text = over_font.render(textentry, True, (150, 255, 100))
+    screen.blit(over_text, (220, 250))
+
 def default_mode_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (190, 250))
 
 def top_text(textentry):
     top_text = top_font.render(textentry, True, (0, 255, 0))
-    screen.blit(top_text, (220, 10))
+    screen.blit(top_text, (200, 10))
 
 def player(x, y):
     screen.blit(playerImg, (x, y))
@@ -164,6 +175,8 @@ while running:
             gadhulacha_mode()
         if event.key == pygame.K_F2:
             shantabai_mode()
+        if event.key == pygame.K_F3:
+            shiti_mode()
         if event.key == pygame.K_F12:
             default_mode()
 
@@ -221,5 +234,5 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
-    top_text("Don't let the vadapavs destroy your ship!")
+    top_text("Keep the vadapavs away from baby penguin!")
     pygame.display.update()
