@@ -13,21 +13,28 @@ screen = pygame.display.set_mode((800, 600))
 background = pygame.image.load("background.jpg")
 
 # Background sound
-mixer.music.load("Action_Hero.mp3")
+mixer.music.load("openingTheme.mp3")
 mixer.music.play(-1)
 
 ## Defining fonts
-    # Score
+# Score
 score_value = 0
 font = pygame.font.Font("freesansbold.ttf", 24)
 
 textX = 10
 textY = 10
 
-    # Game over text
+# Game over text
 over_font = pygame.font.Font("freesansbold.ttf", 64)
-    # Top font
+# Top font
 top_font = pygame.font.Font("freesansbold.ttf", 20)
+
+# Default mode
+def default_mode():
+    mixer.music.load("openingTheme.mp3")
+    mixer.music.play(-1)
+    default_mode_text("Normal Mode")
+    pygame.display.update()
 
 # Gadhulacha Paani Mode
 def gadhulacha_mode():
@@ -43,11 +50,11 @@ def shantabai_mode():
     shantabai_text("Shantabai!")
     pygame.display.update()
 
-# Default mode
-def default_mode():
-    mixer.music.load("Action_Hero.mp3")
+# Shiti vajali gadi sutali Mode
+def shiti_mode():
+    mixer.music.load("shiti.mp3")
     mixer.music.play(-1)
-    default_mode_text("Normal Mode")
+    shiti_text("Shiti vajali!")
     pygame.display.update()
 
 
@@ -57,7 +64,7 @@ icon = pygame.image.load("logo.png")
 pygame.display.set_icon((icon))
 
 # Player
-playerImg = pygame.image.load("penguin.png")
+playerImg = pygame.image.load("ship.png")
 playerX = 370
 playerY = 480
 playerXchange = 0
@@ -68,7 +75,7 @@ enemyX = []
 enemyY = []
 enemyXchange = []
 enemyYchange = []
-num_of_enemies = 6
+num_of_enemies = 7
 
 for i in range(num_of_enemies):
     enemy = "vadapav.png" 
@@ -81,7 +88,7 @@ for i in range(num_of_enemies):
 # Bullet
 # Ready- You can't see the bullet on the screen
 # Fire- The bullet is currently moving
-bulletImg = pygame.image.load("snake.png")
+bulletImg = pygame.image.load("bullet.png")
 bulletX = 0
 bulletY = 480
 bulletXchange = 0
@@ -105,13 +112,17 @@ def shantabai_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (230, 250))
 
+def shiti_text(textentry):
+    over_text = over_font.render(textentry, True, (150, 255, 100))
+    screen.blit(over_text, (220, 250))
+
 def default_mode_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (190, 250))
 
 def top_text(textentry):
     top_text = top_font.render(textentry, True, (0, 255, 0))
-    screen.blit(top_text, (220, 10))
+    screen.blit(top_text, (200, 10))
 
 def player(x, y):
     screen.blit(playerImg, (x, y))
@@ -161,10 +172,21 @@ while running:
                 bulletX = playerX
                 fireBullet(bulletX, bulletY)
         if event.key == pygame.K_F1:
+            background = pygame.image.load("gadhulacha_bg.png")
+            playerImg = pygame.image.load("penguin.png")
+            bulletImg = pygame.image.load("snake.png")
             gadhulacha_mode()
+
         if event.key == pygame.K_F2:
             shantabai_mode()
+
+        if event.key == pygame.K_F3:
+            shiti_mode()
+
         if event.key == pygame.K_F12:
+            background = pygame.image.load("background.jpg")
+            playerImg = pygame.image.load("ship.png")
+            bulletImg = pygame.image.load("bullet.png")
             default_mode()
 
 
@@ -221,5 +243,5 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
-    top_text("Don't let the vadapavs destroy your ship!")
+    top_text("Keep the vadapavs away from baby penguin!")
     pygame.display.update()
