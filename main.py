@@ -57,6 +57,12 @@ def shiti_mode():
     shiti_text("Shiti vajali!")
     pygame.display.update()
 
+# Astronomia Mode
+def astronomia_mode():
+    mixer.music.load("Coffin dance.mp3")
+    mixer.music.play(-1)
+    shiti_text("Astronomia!")
+    pygame.display.update()
 
 # Title and icon
 pygame.display.set_caption("Meme Invaders")
@@ -116,6 +122,10 @@ def shiti_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (220, 250))
 
+def astronomia_text(textentry):
+    over_text = over_font.render(textentry, True, (255, 255, 255))
+    screen.blit(over_text, (280, 250))
+
 def default_mode_text(textentry):
     over_text = over_font.render(textentry, True, (150, 255, 100))
     screen.blit(over_text, (190, 250))
@@ -172,7 +182,7 @@ while running:
                 bulletX = playerX
                 fireBullet(bulletX, bulletY)
         if event.key == pygame.K_F1:
-            background = pygame.image.load("gadhulacha_bg.png")
+            background = pygame.image.load("gadhulacha_bg.jpg")
             playerImg = pygame.image.load("penguin.png")
             bulletImg = pygame.image.load("snake.png")
             gadhulacha_mode()
@@ -182,6 +192,12 @@ while running:
 
         if event.key == pygame.K_F3:
             shiti_mode()
+
+        if event.key == pygame.K_F4:
+            background = pygame.image.load("coffin_bg.jpg")
+            playerImg = pygame.image.load("bow.png")
+            bulletImg = pygame.image.load("arrow.png")
+            astronomia_mode()
 
         if event.key == pygame.K_F12:
             background = pygame.image.load("background.jpg")
