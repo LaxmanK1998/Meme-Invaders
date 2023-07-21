@@ -34,5 +34,11 @@ F3 - Shiti Vajali Mode
 F12 - Switch back to default Mode
 
 
+A demo of the video game is now available below:
+
+https://github.com/LaxmanK1998/Meme-Invaders/assets/40718958/fcfcbc42-c32c-4d8d-ab6b-9d9ed4f673e3
+
+
 
 Created on 20th July 2020
+Last Updated 21st July 2023
