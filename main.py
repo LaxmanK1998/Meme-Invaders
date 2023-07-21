@@ -28,6 +28,8 @@ textY = 10
 over_font = pygame.font.Font("freesansbold.ttf", 64)
 # Top font
 top_font = pygame.font.Font("freesansbold.ttf", 20)
+#Control info font
+control_info_font = pygame.font.Font("freesansbold.ttf", 18)
 
 # Default mode
 def default_mode():
@@ -81,14 +83,14 @@ enemyX = []
 enemyY = []
 enemyXchange = []
 enemyYchange = []
-num_of_enemies = 7
+num_of_enemies = 6
 
 for i in range(num_of_enemies):
     enemy = "vadapav.png" 
     enemyImg.append(pygame.image.load(enemy))
     enemyX.append(random.randint(0, 736))
     enemyY.append(random.randint(50, 150))
-    enemyXchange.append(4)
+    enemyXchange.append(1)
     enemyYchange.append(40)
 
 # Bullet
@@ -98,7 +100,7 @@ bulletImg = pygame.image.load("bullet.png")
 bulletX = 0
 bulletY = 480
 bulletXchange = 0
-bulletYchange = 10
+bulletYchange = 3
 bulletState = "ready"
 
 
@@ -132,7 +134,11 @@ def default_mode_text(textentry):
 
 def top_text(textentry):
     top_text = top_font.render(textentry, True, (0, 255, 0))
-    screen.blit(top_text, (200, 10))
+    screen.blit(top_text, (205, 10))
+
+def control_info_text(textentry):
+    control_info_text = control_info_font.render(textentry, True, (0, 255, 0))
+    screen.blit(control_info_text, (190, 35))
 
 def player(x, y):
     screen.blit(playerImg, (x, y))
@@ -168,47 +174,47 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # If keystroke is pressed check whether left or right
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT:
-            playerXchange = -5
-        if event.key == pygame.K_RIGHT:
-            playerXchange = 5
-        if event.key == pygame.K_SPACE:
-            if bulletState == "ready":
-                bulletSound = mixer.Sound("laser.wav")
-                bulletSound.play()
-                # Get the current x co-ordinate of the spaceship
-                bulletX = playerX
-                fireBullet(bulletX, bulletY)
-        if event.key == pygame.K_F1:
-            background = pygame.image.load("gadhulacha_bg.jpg")
-            playerImg = pygame.image.load("penguin.png")
-            bulletImg = pygame.image.load("snake.png")
-            gadhulacha_mode()
+        # If keystroke is pressed check whether left or right
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                playerXchange = -2
+            if event.key == pygame.K_RIGHT:
+                playerXchange = 2
+            if event.key == pygame.K_SPACE:
+                if bulletState == "ready":
+                    bulletSound = mixer.Sound("laser.wav")
+                    bulletSound.play()
+                    # Get the current x co-ordinate of the spaceship
+                    bulletX = playerX
+                    fireBullet(bulletX, bulletY)
+            if event.key == pygame.K_F1:
+                background = pygame.image.load("gadhulacha_bg.jpg")
+                playerImg = pygame.image.load("penguin.png")
+                bulletImg = pygame.image.load("snake.png")
+                gadhulacha_mode()
 
-        if event.key == pygame.K_F2:
-            shantabai_mode()
+            if event.key == pygame.K_F2:
+                shantabai_mode()
 
-        if event.key == pygame.K_F3:
-            shiti_mode()
+            if event.key == pygame.K_F3:
+                shiti_mode()
 
-        if event.key == pygame.K_F4:
-            background = pygame.image.load("coffin_bg.jpg")
-            playerImg = pygame.image.load("bow.png")
-            bulletImg = pygame.image.load("arrow.png")
-            astronomia_mode()
+            if event.key == pygame.K_F4:
+                background = pygame.image.load("coffin_bg.jpg")
+                playerImg = pygame.image.load("bow.png")
+                bulletImg = pygame.image.load("arrow.png")
+                astronomia_mode()
 
-        if event.key == pygame.K_F12:
-            background = pygame.image.load("background.jpg")
-            playerImg = pygame.image.load("ship.png")
-            bulletImg = pygame.image.load("bullet.png")
-            default_mode()
+            if event.key == pygame.K_F12:
+                background = pygame.image.load("background.jpg")
+                playerImg = pygame.image.load("ship.png")
+                bulletImg = pygame.image.load("bullet.png")
+                default_mode()
 
 
-    if event.type == pygame.KEYUP:
-        if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-            playerXchange = 0
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    playerXchange = 0
 
     # Checking for boundaries of spaceship so it doesn't go out of bounds
     playerX += playerXchange
@@ -229,10 +235,10 @@ while running:
 
         enemyX[i] += enemyXchange[i]
         if enemyX[i] <= 0:
-            enemyXchange[i] = 3
+            enemyXchange[i] = 0.8
             enemyY[i] += enemyYchange[i]
         elif enemyX[i] >= 736:
-            enemyXchange[i] = -3
+            enemyXchange[i] = -0.8
             enemyY[i] += enemyYchange[i]
 
         # Collision
@@ -259,5 +265,6 @@ while running:
 
     player(playerX, playerY)
     show_score(textX, textY)
-    top_text("Keep the vadapavs away from baby penguin!")
+    top_text("Keep the vadapavs away from the player!")
+    control_info_text("Controls: Space to Shoot and Arrow keys to Move")
     pygame.display.update()
