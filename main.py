@@ -71,24 +71,33 @@ player_name_input = ""
 # Default mode
 def default_mode():
     if not is_muted:
-        mixer.music.load("openingTheme.mp3")
-        mixer.music.play(-1)
+        try:
+            mixer.music.load("openingTheme.mp3")
+            mixer.music.play(-1)
+        except Exception:
+            pass
     default_mode_text("Normal Mode")
     pygame.display.update()
 
 # Gadhulacha Paani Mode
 def gadhulacha_mode():
     if not is_muted:
-        mixer.music.load("kallulache_pani.mp3")
-        mixer.music.play(-1)
+        try:
+            mixer.music.load("kallulache_pani.mp3")
+            mixer.music.play(-1)
+        except Exception:
+            pass
     gadhulacha_text("Gadhulacha Paani!")
     pygame.display.update()
 
 # Shantabai Mode
 def shantabai_mode():
     if not is_muted:
-        mixer.music.load("shantabai.mp3")
-        mixer.music.play(-1)
+        try:
+            mixer.music.load("shantabai.mp3")
+            mixer.music.play(-1)
+        except Exception:
+            pass
     shantabai_text("Shantabai!")
     pygame.display.update()
 
@@ -134,8 +143,16 @@ def init_enemies():
     enemyY = []
     enemyXchange = []
     enemyYchange = []
+    try:
+        v_img = pygame.transform.scale(pygame.image.load("vadapav.png"), (64, 64))
+        m_img = pygame.transform.scale(pygame.image.load("momos.png"), (64, 64))
+    except Exception:
+        v_img = pygame.transform.scale(pygame.image.load("vadapav.png"), (64, 64))
+        m_img = v_img
+
     for i in range(num_of_enemies):
-        enemyImg.append(pygame.image.load("vadapav.png"))
+        img = v_img if (i % 2 == 0) else m_img
+        enemyImg.append(img)
         enemyX.append(random.randint(0, 736))
         enemyY.append(random.randint(50, 150))
         enemyXchange.append(1)
@@ -147,11 +164,15 @@ init_enemies()
 raw_vadapav = pygame.image.load("vadapav.png")
 bossImg = pygame.transform.scale(raw_vadapav, (150, 150))
 boss_active = False
-boss_hp = 50
-boss_max_hp = 50
+boss_hp = 20
+boss_max_hp = 20
 bossX = 325.0
 bossY = 60.0
-bossXchange = 1.8
+bossXchange = 1.0
+last_boss_wave = 0
+boss_attack_timer = 0
+boss_secondary_timer = 0
+boss_projectiles = []
 
 # Bullets System
 bulletImg = pygame.image.load("bullet.png")
@@ -161,12 +182,14 @@ bulletYchange = 5
 # Power-ups & Timers
 triple_shot_timer = 0
 shield_timer = 0
+laser_timer = 0
+speed_timer = 0
 
 class PowerUp:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.type = random.choice(["triple", "shield", "nuke"])
+        self.type = random.choice(["triple", "shield", "nuke", "laser", "speed", "life"])
         self.speed = 2.0
         self.active = True
 
@@ -178,13 +201,27 @@ class PowerUp:
     def draw(self, surface):
         if not self.active:
             return
-        colors = {"triple": (255, 215, 0), "shield": (0, 200, 255), "nuke": (255, 60, 60)}
-        labels = {"triple": "3X", "shield": "SHD", "nuke": "BOMB"}
-        rect = pygame.Rect(self.x, self.y, 44, 24)
-        pygame.draw.rect(surface, colors[self.type], rect, border_radius=6)
-        pygame.draw.rect(surface, (255, 255, 255), rect, width=2, border_radius=6)
+        colors = {
+            "triple": (255, 215, 0),
+            "shield": (0, 200, 255),
+            "nuke": (255, 60, 60),
+            "laser": (255, 0, 255),
+            "speed": (50, 255, 50),
+            "life": (255, 105, 180)
+        }
+        labels = {
+            "triple": "3X",
+            "shield": "SHD",
+            "nuke": "BOMB",
+            "laser": "BEAM",
+            "speed": "SPD",
+            "life": "+1 HP"
+        }
+        rect = pygame.Rect(self.x, self.y, 68, 32)
+        pygame.draw.rect(surface, colors[self.type], rect, border_radius=8)
+        pygame.draw.rect(surface, (255, 255, 255), rect, width=3, border_radius=8)
         
-        p_font = pygame.font.Font("freesansbold.ttf", 12)
+        p_font = pygame.font.Font("freesansbold.ttf", 14)
         p_text = p_font.render(labels[self.type], True, (0, 0, 0))
         surface.blit(p_text, p_text.get_rect(center=rect.center))
 
@@ -219,8 +256,9 @@ def create_explosion(x, y):
 
 def reset_game():
     global score_value, lives, playerX, playerY, playerXchange, bullets, powerups, particles
-    global triple_shot_timer, shield_timer, game_state, high_score, high_scores_list
-    global boss_active, boss_hp, bossX, bossY
+    global triple_shot_timer, shield_timer, laser_timer, speed_timer, game_state, high_score, high_scores_list
+    global boss_active, boss_hp, boss_max_hp, bossX, bossY, last_boss_wave
+    global boss_projectiles, boss_attack_timer, boss_secondary_timer
     score_value = 0
     lives = 3
     playerX = 370
@@ -231,10 +269,18 @@ def reset_game():
     particles = []
     triple_shot_timer = 0
     shield_timer = 0
+    laser_timer = 0
+    speed_timer = 0
     boss_active = False
-    boss_hp = 50
+    boss_hp = 20
+    boss_max_hp = 20
     bossX = 325.0
     bossY = 60.0
+    bossXchange = 1.0
+    last_boss_wave = 0
+    boss_projectiles = []
+    boss_attack_timer = 0
+    boss_secondary_timer = 0
     high_scores_list = load_high_scores()
     high_score = high_scores_list[0]["score"] if high_scores_list else 0
     init_enemies()
@@ -287,12 +333,23 @@ def show_hud():
     screen.blit(wave_text, (200, 35))
 
     # Active Power-up indicators
+    active_y = 10
     if triple_shot_timer > 0:
         t_text = font.render("[3X] TRIPLE SHOT", True, (255, 215, 0))
-        screen.blit(t_text, (420, 10))
+        screen.blit(t_text, (420, active_y))
+        active_y += 22
     if shield_timer > 0:
         s_text = font.render("[SHIELD] ACTIVE", True, (0, 200, 255))
-        screen.blit(s_text, (420, 35))
+        screen.blit(s_text, (420, active_y))
+        active_y += 22
+    if laser_timer > 0:
+        l_text = font.render("[BEAM] MEGA LASER", True, (255, 0, 255))
+        screen.blit(l_text, (420, active_y))
+        active_y += 22
+    if speed_timer > 0:
+        sp_text = font.render("[SPD] SPEED BOOST", True, (50, 255, 50))
+        screen.blit(sp_text, (420, active_y))
+        active_y += 22
 
 def draw_boss_health_bar(hp, max_hp):
     bar_width = 320
@@ -304,8 +361,8 @@ def draw_boss_health_bar(hp, max_hp):
     pygame.draw.rect(screen, (255, 40, 40), (x, y, int(bar_width * pct), bar_height), border_radius=6)
     pygame.draw.rect(screen, (255, 255, 255), (x, y, bar_width, bar_height), width=2, border_radius=6)
     
-    hp_text = font.render(f"BOSS VADAPAV: {hp}/{max_hp} HP", True, (255, 255, 255))
-    screen.blit(hp_text, (x + 40, y + 25))
+    hp_text = font.render(f"MINIBOSS VADAPAV: {hp}/{max_hp} HP", True, (255, 255, 255))
+    screen.blit(hp_text, (x + 30, y + 25))
 
 def game_over_text():
     over_text = over_font.render("GAME OVER", True, (255, 50, 50))
@@ -369,7 +426,7 @@ while running:
         title_surface = title_font.render("MEME INVADERS", True, (0, 255, 0))
         screen.blit(title_surface, (190, 100))
 
-        sub_surface = control_info_font.render("Save the world from Vadapavs & Boss Vadapav!", True, (255, 255, 255))
+        sub_surface = control_info_font.render("Save the world from Vadapavs & Miniboss Vadapav!", True, (255, 255, 255))
         screen.blit(sub_surface, (200, 170))
 
         hs_start = font.render("All-Time High Score: " + str(high_score), True, (255, 215, 0))
@@ -393,18 +450,19 @@ while running:
             ("MODES", "F1: Gadhulacha | F2: Shantabai"),
             ("      ", "F3: Shiti Vajali  | F4: Astronomia"),
             ("      ", "F12: Default Normal Mode"),
-            ("POWER-UPS", "[3X] Triple Shot | [SHD] Shield | [BOMB] Nuke")
+            ("POWER-UPS", "[3X] Triple | [SHD] Shield | [BOMB] Nuke"),
+            ("         ", "[BEAM] Laser | [SPD] Speed | [+1 HP] Life")
         ]
 
         for idx, (label, text) in enumerate(lines):
             if label.strip():
                 lbl_surf = font.render(f"{label}:", True, (255, 215, 0))
-                screen.blit(lbl_surf, (115, 150 + idx * 52))
+                screen.blit(lbl_surf, (115, 145 + idx * 44))
                 val_surf = font.render(text, True, (255, 255, 255))
-                screen.blit(val_surf, (270, 150 + idx * 52))
+                screen.blit(val_surf, (270, 145 + idx * 44))
             else:
                 val_surf = font.render(text, True, (200, 200, 200))
-                screen.blit(val_surf, (270, 150 + idx * 52))
+                screen.blit(val_surf, (270, 145 + idx * 44))
 
         back_btn_rect = draw_button("BACK", 300, 500, 200, 48, (100, 100, 100), (150, 150, 150), (255, 255, 255), font_size=22)
 
@@ -459,21 +517,28 @@ while running:
             triple_shot_timer -= 1
         if shield_timer > 0:
             shield_timer -= 1
+        if laser_timer > 0:
+            laser_timer -= 1
+        if speed_timer > 0:
+            speed_timer -= 1
 
         # Calculate wave & speed scaling
         wave = 1 + (score_value // 5)
-        speed_multiplier = 1.0 + (wave - 1) * 0.15
+        speed_multiplier = 1.0 + (wave - 1) * 0.08
 
-        # Boss Trigger: Wave 100 (and every 100th wave)
-        if wave >= 100 and (wave % 100 == 0) and not boss_active:
+        # Miniboss Trigger: Wave 10 onwards (every 10 waves)
+        if wave >= 10 and (wave // 10 > last_boss_wave // 10) and not boss_active:
             boss_active = True
-            boss_hp = 50
-            boss_max_hp = 50
+            boss_hp = 20
+            boss_max_hp = 20
             bossX = 325.0
             bossY = 60.0
+            bossXchange = 1.0
+            last_boss_wave = wave
 
         # Player Movement
-        playerX += playerXchange
+        speed_mult = 2.0 if speed_timer > 0 else 1.0
+        playerX += playerXchange * speed_mult
         if playerX <= 0:
             playerX = 0
         elif playerX >= 736:
@@ -486,16 +551,58 @@ while running:
             if p.lifetime <= 0 or p.radius <= 0:
                 particles.remove(p)
 
+        # Mega Laser Beam Execution
+        if laser_timer > 0:
+            beam_x = playerX + 22
+            beam_w = 20
+            pygame.draw.rect(screen, (255, 0, 255), (beam_x, 0, beam_w, playerY))
+            pygame.draw.rect(screen, (255, 255, 255), (beam_x + 6, 0, 8, playerY))
+            for _ in range(3):
+                particles.append(Particle(playerX + 32 + random.randint(-10, 10), random.randint(0, int(playerY))))
+
+            # Laser hit regular enemies
+            if not boss_active:
+                for i in range(num_of_enemies):
+                    if (beam_x - 20) <= enemyX[i] <= (beam_x + beam_w):
+                        create_explosion(enemyX[i] + 32, enemyY[i] + 32)
+                        score_value += 1
+                        if random.random() < 0.15:
+                            powerups.append(PowerUp(enemyX[i] + 16, enemyY[i] + 16))
+                        enemyX[i] = random.randint(0, 736)
+                        enemyY[i] = random.randint(50, 150)
+
+            # Laser hit Boss Vadapav
+            if boss_active and bossX <= (playerX + 32) <= (bossX + 150):
+                boss_hp -= 0.15
+                create_explosion(playerX + 32, bossY + 75)
+                if boss_hp <= 0:
+                    boss_active = False
+                    boss_projectiles = []
+                    score_value += 15
+                    for _ in range(6):
+                        create_explosion(bossX + random.randint(10, 140), bossY + random.randint(10, 140))
+
         # Update & Render Power-ups
         for pu in powerups[:]:
             pu.update()
             pu.draw(screen)
-            if pu.active and math.sqrt((pu.x - (playerX + 16))**2 + (pu.y - (playerY + 16))**2) < 40:
+            if pu.active and math.sqrt((pu.x + 34 - (playerX + 32))**2 + (pu.y + 16 - (playerY + 32))**2) < 55:
                 pu.active = False
                 if pu.type == "triple":
-                    triple_shot_timer = 400
+                    triple_shot_timer = 450
                 elif pu.type == "shield":
-                    shield_timer = 400
+                    shield_timer = 450
+                elif pu.type == "laser":
+                    laser_timer = 350
+                elif pu.type == "speed":
+                    speed_timer = 450
+                elif pu.type == "life":
+                    lives = min(5, lives + 1)
+                    if not is_muted:
+                        try:
+                            mixer.Sound("laser.wav").play()
+                        except Exception:
+                            pass
                 elif pu.type == "nuke":
                     if boss_active:
                         boss_hp = max(0, boss_hp - 15)
@@ -514,7 +621,7 @@ while running:
             if not pu.active:
                 powerups.remove(pu)
 
-        # BOSS VADAPAV LOGIC
+        # BOSS VADAPAV LOGIC (Strictly active alone when boss_active is True)
         if boss_active:
             bossX += bossXchange
             if bossX <= 0 or bossX >= 650:
@@ -522,6 +629,46 @@ while running:
 
             screen.blit(bossImg, (int(bossX), int(bossY)))
             draw_boss_health_bar(boss_hp, boss_max_hp)
+
+            # Primary Attack: Aimed Red Chili Missile (~every 2.7s)
+            boss_attack_timer += 1
+            if boss_attack_timer >= 160:
+                boss_attack_timer = 0
+                dx = (playerX + 32) - (bossX + 75)
+                dy = (playerY + 32) - (bossY + 140)
+                dist = max(1.0, math.sqrt(dx * dx + dy * dy))
+                speed = 2.4
+                vx = (dx / dist) * speed
+                vy = (dy / dist) * speed
+                boss_projectiles.append({
+                    'x': bossX + 75,
+                    'y': bossY + 140,
+                    'vx': vx,
+                    'vy': vy,
+                    'type': 'primary',
+                    'color': (255, 50, 30),
+                    'radius': 7
+                })
+                if not is_muted:
+                    try:
+                        mixer.Sound("laser.wav").play()
+                    except Exception:
+                        pass
+
+            # Secondary Attack: 3-Way Spicy Chutney Spread Burst (~every 6.3s)
+            boss_secondary_timer += 1
+            if boss_secondary_timer >= 380:
+                boss_secondary_timer = 0
+                for vx in [-1.5, 0.0, 1.5]:
+                    boss_projectiles.append({
+                        'x': bossX + 75,
+                        'y': bossY + 140,
+                        'vx': vx,
+                        'vy': 2.2,
+                        'type': 'secondary',
+                        'color': (50, 230, 80),
+                        'radius': 8
+                    })
 
             # Bullet collision with Boss
             for b in bullets[:]:
@@ -538,12 +685,57 @@ while running:
 
                     if boss_hp <= 0:
                         boss_active = False
-                        score_value += 50  # Boss defeat bonus!
-                        for _ in range(6):
+                        boss_projectiles = []
+                        score_value += 20  # Miniboss defeat bonus!
+                        powerups.append(PowerUp(bossX + 40, bossY + 80))
+                        powerups.append(PowerUp(bossX + 90, bossY + 80))
+                        for _ in range(8):
                             create_explosion(bossX + random.randint(10, 140), bossY + random.randint(10, 140))
                         break
+
+            # Update & Render Boss Projectiles
+            for bp in boss_projectiles[:]:
+                bp['x'] += bp['vx']
+                bp['y'] += bp['vy']
+
+                px, py = int(bp['x']), int(bp['y'])
+                r = bp['radius']
+                pygame.draw.circle(screen, bp['color'], (px, py), r)
+                pygame.draw.circle(screen, (255, 255, 255), (px, py), r, width=2)
+
+                if random.random() < 0.5:
+                    particles.append(Particle(px, py))
+
+                if bp['y'] > 620 or bp['x'] < -30 or bp['x'] > 830:
+                    if bp in boss_projectiles:
+                        boss_projectiles.remove(bp)
+                    continue
+
+                # Collision check with player ship
+                p_center_x = playerX + 32
+                p_center_y = playerY + 32
+                hit_dist = math.sqrt((bp['x'] - p_center_x)**2 + (bp['y'] - p_center_y)**2)
+                if hit_dist < (r + 18):
+                    create_explosion(p_center_x, p_center_y)
+                    if bp in boss_projectiles:
+                        boss_projectiles.remove(bp)
+                    
+                    if shield_timer > 0:
+                        shield_timer = max(0, shield_timer - 100)
+                    else:
+                        lives -= 1
+                        if not is_muted:
+                            try:
+                                mixer.Sound("explosion.wav").play()
+                            except Exception:
+                                pass
+                        if lives <= 0:
+                            player_name_input = ""
+                            game_state = "GAME_OVER_NAME"
+                            break
+
         else:
-            # REGULAR VADAPAV LOGIC
+            # REGULAR ENEMIES LOGIC (Renders ONLY when Boss is NOT active!)
             for i in range(num_of_enemies):
                 if enemyY[i] > 440:
                     create_explosion(enemyX[i] + 32, enemyY[i] + 32)
